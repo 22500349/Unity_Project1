@@ -49,6 +49,8 @@ public class PlayerMove : MonoBehaviour
     {
         //Move Speed And Key Control 
         float h = Input.GetAxisRaw("Horizontal");
+
+
         rigid.AddForce(Vector2.right * h, ForceMode2D.Impulse);
 
         if(rigid.linearVelocity.x > maxSpeed){ //Right max speed
@@ -58,6 +60,7 @@ public class PlayerMove : MonoBehaviour
         else if(rigid.linearVelocity.x < maxSpeed*(-1)){  //Left max speed
             rigid.linearVelocity = new Vector2(maxSpeed*(-1), rigid.linearVelocity.y);
         }
+        
 
         //Landing Platform
         if(rigid.linearVelocity.y < 0){
