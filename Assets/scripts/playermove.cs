@@ -10,6 +10,8 @@ public class PlayerMove : MonoBehaviour
     SpriteRenderer spriteRenderer;
     Animator anim;
 
+    bool isKnockback = false;
+
     void Awake()
     {
         rigid = GetComponent<Rigidbody2D>();
@@ -18,7 +20,9 @@ public class PlayerMove : MonoBehaviour
     }
 
     void Update()
-    {  
+    {   
+        if (isKnockback) return;
+
         //Jump
         if(Input.GetButtonDown("Jump") && !anim.GetBool("isJumping")){
             rigid.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
@@ -46,7 +50,9 @@ public class PlayerMove : MonoBehaviour
     }
 
     void FixedUpdate()
-    {
+    {   
+        if (isKnockback) return;
+
         //Move Speed And Key Control 
         float h = Input.GetAxisRaw("Horizontal");
 
@@ -76,4 +82,50 @@ public class PlayerMove : MonoBehaviour
         }
 
     }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if(collision.gameObject.tag == "Enemy")
+        {
+            Vector2 contactPoint = collision.contacts[0].point;
+            OnDamaged(contactPoint);
+        }
+
+        if (isKnockback && collision.gameObject.layer == LayerMask.NameToLayer("Platform"))
+        {
+            // 1. 땅에 닿았으니 넉백 상태를 풀어서 조작이 가능하게 만듦
+            Invoke("OffKnockback", 0.3f);
+
+            // 2. 땅에 닿은 지금 이 순간부터 2초 뒤에 무적이 풀리도록 타이머 시작!
+            Invoke("OffDamaged", 2); 
+        }
+    }
+
+    void OnDamaged(Vector2 targetPos)
+    {   
+
+        gameObject.layer = 11;                                      //피격시 레이어 변경
+        spriteRenderer.color = new Color(1, 1, 1, 0.4f);            //피격 반응
+
+        int dirc = transform.position.x - targetPos.x > 0 ? 1 : -1; //피격시 어느쪽으로 밀려날지
+
+        isKnockback = true;                                         //조작 불능 상태 시작
+
+        rigid.linearVelocity = Vector2.zero;                        //피격시 조작감 없애기
+        rigid.AddForce(new Vector2(dirc,1)*7, ForceMode2D.Impulse); //얼마나 밀려나나?
+        anim.SetTrigger("doDamaged");                               //피격애니
+    }
+
+    void OffDamaged()
+    {
+        gameObject.layer = 10;
+        spriteRenderer.color = new Color(1, 1, 1, 1);
+    }
+
+    void OffKnockback()
+    {
+        isKnockback = false;
+    }
+
+    
 }
