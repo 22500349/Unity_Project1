@@ -202,13 +202,32 @@ public class PlayerMove : MonoBehaviour
 
         else if (collision.gameObject.CompareTag("Finish"))
         {
-            // [버그 방지] 콜라이더나 여러 요인으로 한 번에 여러 번 닿아 
+            // [버그 방지] 콜라이더나 여러 요인으로 한 번에 여러 번 닿아
             // 스테이지가 순식간에 넘어가 클리어되는 것을 방지하기 위해 비활성화합니다.
             collision.enabled = false;
 
             //다음 스테이지
             gameManager.NextStage();
             PlaySound("Finish");
+        }
+
+        // 스파이크가 isTrigger = true 인 경우 데미지 처리
+        else if (!isDamaged && collision.gameObject.CompareTag("Spike"))
+        {
+            Vector2 contactPoint = collision.bounds.center;
+            OnDamaged(contactPoint);
+            PlaySound("Damage");
+        }
+    }
+
+    void OnTriggerStay2D(Collider2D collision)
+    {
+        // 날아오는 스파이크가 플레이어 위치로 이동할 때 감지
+        if (!isDamaged && collision.gameObject.CompareTag("Spike"))
+        {
+            Vector2 contactPoint = collision.bounds.center;
+            OnDamaged(contactPoint);
+            PlaySound("Damage");
         }
     }
     void OnAttack(Transform enemy)
