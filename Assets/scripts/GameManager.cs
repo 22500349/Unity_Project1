@@ -146,6 +146,11 @@ public class GameManager : MonoBehaviour
 
     public void PlayerReporsition()
     {
+        foreach (var t in FindObjectsByType<MapTrigger>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            t.ResetTrigger();
+        foreach (var t in FindObjectsByType<MonsterTrigger>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            t.ResetTrigger();
+
         player.transform.position = spawnPoint;
         player.VelocityZero();
     }

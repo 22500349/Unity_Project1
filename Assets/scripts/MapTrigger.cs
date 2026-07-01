@@ -46,6 +46,14 @@ public class MapTrigger : MonoBehaviour
         triggered = false;
     }
 
+    public void ResetTrigger()
+    {
+        StopAllCoroutines();
+        triggered = false;
+        if (target != null)
+            target.transform.position = originPos;
+    }
+
     IEnumerator MoveTo(Vector2 goal)
     {
         if (delay > 0f)

@@ -31,6 +31,11 @@ public class MonsterTrigger : MonoBehaviour
             triggered = false;
     }
 
+    public void ResetTrigger()
+    {
+        triggered = false;
+    }
+
     void OnDrawGizmos()
     {
         if (!TryGetComponent<BoxCollider2D>(out var box)) return;
