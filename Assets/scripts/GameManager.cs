@@ -74,7 +74,7 @@ public class GameManager : MonoBehaviour
         img.color = new Color(0.15f, 0.15f, 0.15f, 0.85f);
 
         Button btn = btnGO.AddComponent<Button>();
-        btn.onClick.AddListener(Restart);
+        btn.onClick.AddListener(FullRestart);
 
         GameObject textGO = new GameObject("Label");
         textGO.transform.SetParent(btnGO.transform, false);
@@ -219,7 +219,18 @@ public class GameManager : MonoBehaviour
         player.VelocityZero();
     }
 
+    // 게임오버 후 재시작 — 죽은 스테이지에서 다시 시작
     public void Restart()
+    {
+        stagePoint = 0;
+        health = maxHealth;
+
+        Time.timeScale = 1;
+        SceneManager.LoadScene(stageScenes[stageIndex]);
+    }
+
+    // 오른쪽 하단 초기화 버튼 — Stage1부터 완전 초기화
+    void FullRestart()
     {
         totalPoint = 0;
         stagePoint = 0;
