@@ -34,6 +34,7 @@ public class PlayerMove : MonoBehaviour
     AudioSource audioSource;
 
     bool isKnockback = false;
+    bool isDamaged = false;
 
     void Awake()
     {
@@ -138,7 +139,7 @@ public class PlayerMove : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Enemy"))
+        if (!isDamaged && collision.gameObject.CompareTag("Enemy"))
         {
             //공격
             if (rigid.linearVelocity.y < 0 && transform.position.y > collision.transform.position.y)
@@ -157,7 +158,7 @@ public class PlayerMove : MonoBehaviour
         }
 
         // 스파이크는 항상 데미지만 줌 (점수 없음)
-        if (collision.gameObject.CompareTag("Spike"))
+        if (!isDamaged && collision.gameObject.CompareTag("Spike"))
         {
             Vector2 contactPoint = collision.contacts[0].point;
             OnDamaged(contactPoint);
@@ -173,8 +174,8 @@ public class PlayerMove : MonoBehaviour
             // 1. 땅에 닿았으니 넉백 상태를 풀어서 조작이 가능하게 만듦
             Invoke("OffKnockback", 0.3f);
 
-            // 2. 땅에 닿은 지금 이 순간부터 2초 뒤에 무적이 풀리도록 타이머 시작!
-            Invoke("OffDamaged", 2);
+            // 2. 땅에 닿은 지금 이 순간부터 1초 뒤에 무적이 풀리도록 타이머 시작!
+            Invoke("OffDamaged", 1);
         }
     }
 
@@ -234,7 +235,7 @@ public class PlayerMove : MonoBehaviour
     {
         gameManager.HealthDown();                                   // 피 감소
 
-        gameObject.layer = 11;                                      //피격시 레이어 변경
+        isDamaged = true;
         spriteRenderer.color = new Color(1, 1, 1, 0.4f);            //피격 반응
 
         int dirc = transform.position.x - targetPos.x > 0 ? 1 : -1; //피격시 어느쪽으로 밀려날지
@@ -248,7 +249,7 @@ public class PlayerMove : MonoBehaviour
 
     void OffDamaged()
     {
-        gameObject.layer = 10;
+        isDamaged = false;
         spriteRenderer.color = new Color(1, 1, 1, 1);
     }
 

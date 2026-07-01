@@ -5,8 +5,8 @@ using System.Collections;
 // 플레이어가 트리거 존을 밟으면 → 지정한 오브젝트를 이동시킵니다.
 public class MapTrigger : MonoBehaviour
 {
-    [Header("움직일 오브젝트")]
-    public GameObject target;
+    [Header("움직일 오브젝트 (여러 개 가능)")]
+    public GameObject[] targets;
 
     [Header("이동 설정")]
     public Vector2 moveOffset;   // 이동 방향·거리 (예: 위로 3칸 = (0, 3))
@@ -17,15 +17,21 @@ public class MapTrigger : MonoBehaviour
     public bool oneShot = true;  // true = 한 번만 발동 / false = 반복 발동
     public bool returnOnExit = false; // true = 플레이어가 나가면 원위치
 
-    Vector2 originPos;
-    Vector2 destPos;
+    Vector2[] originPositions;
+    Vector2[] destPositions;
     bool triggered = false;
 
     void Start()
     {
-        if (target == null) return;
-        originPos = target.transform.position;
-        destPos = originPos + moveOffset;
+        if (targets == null || targets.Length == 0) return;
+        originPositions = new Vector2[targets.Length];
+        destPositions = new Vector2[targets.Length];
+        for (int i = 0; i < targets.Length; i++)
+        {
+            if (targets[i] == null) continue;
+            originPositions[i] = targets[i].transform.position;
+            destPositions[i] = originPositions[i] + moveOffset;
+        }
     }
 
     void OnTriggerEnter2D(Collider2D col)
@@ -35,14 +41,16 @@ public class MapTrigger : MonoBehaviour
 
         triggered = true;
         StopAllCoroutines();
-        StartCoroutine(MoveTo(destPos));
+        for (int i = 0; i < targets.Length; i++)
+            StartCoroutine(MoveTo(i, destPositions[i]));
     }
 
     void OnTriggerExit2D(Collider2D col)
     {
         if (!returnOnExit || !col.CompareTag("Player")) return;
         StopAllCoroutines();
-        StartCoroutine(MoveTo(originPos));
+        for (int i = 0; i < targets.Length; i++)
+            StartCoroutine(MoveTo(i, originPositions[i]));
         triggered = false;
     }
 
@@ -50,24 +58,29 @@ public class MapTrigger : MonoBehaviour
     {
         StopAllCoroutines();
         triggered = false;
-        if (target != null)
-            target.transform.position = originPos;
+        if (originPositions == null) return;
+        for (int i = 0; i < targets.Length; i++)
+        {
+            if (targets[i] != null)
+                targets[i].transform.position = originPositions[i];
+        }
     }
 
-    IEnumerator MoveTo(Vector2 goal)
+    IEnumerator MoveTo(int index, Vector2 goal)
     {
         if (delay > 0f)
             yield return new WaitForSeconds(delay);
 
-        while (target != null && Vector2.Distance(target.transform.position, goal) > 0.01f)
+        GameObject t = targets[index];
+        while (t != null && Vector2.Distance(t.transform.position, goal) > 0.01f)
         {
-            target.transform.position = Vector2.MoveTowards(
-                target.transform.position, goal, speed * Time.deltaTime);
+            t.transform.position = Vector2.MoveTowards(
+                t.transform.position, goal, speed * Time.deltaTime);
             yield return null;
         }
 
-        if (target != null)
-            target.transform.position = goal;
+        if (t != null)
+            t.transform.position = goal;
     }
 
     void OnDrawGizmos()
