@@ -1,8 +1,8 @@
 using UnityEngine;
 using System.Collections;
 
+[RequireComponent(typeof(BoxCollider2D))]
 // 플레이어가 트리거 존을 밟으면 → 지정한 오브젝트를 이동시킵니다.
-// 블록 솟기/떨어지기/스파이크 튀어오르기/벽으로 가두기 모두 이 스크립트 하나로 가능합니다.
 public class MapTrigger : MonoBehaviour
 {
     [Header("움직일 오브젝트")]
@@ -60,5 +60,17 @@ public class MapTrigger : MonoBehaviour
 
         if (target != null)
             target.transform.position = goal;
+    }
+
+    void OnDrawGizmos()
+    {
+        if (!TryGetComponent<BoxCollider2D>(out var box)) return;
+
+        Gizmos.matrix = transform.localToWorldMatrix;
+        Gizmos.color = new Color(0.3f, 0.8f, 1f, 0.3f);
+        Gizmos.DrawCube(box.offset, box.size);
+        Gizmos.color = new Color(0.3f, 0.8f, 1f, 1f);
+        Gizmos.DrawWireCube(box.offset, box.size);
+        Gizmos.matrix = Matrix4x4.identity;
     }
 }

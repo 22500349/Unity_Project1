@@ -123,14 +123,17 @@ public class GameManager : MonoBehaviour
 
     public void HealthDown()
     {
+        Debug.Log($"HealthDown 호출됨 - 현재 health: {health}");
         if (health > 1)
         {
             health--;
+            Debug.Log($"health 감소 → {health}");
             if (UIhealth != null && UIhealth[health] != null)
                 UIhealth[health].color = new Color(1, 0, 0, 0.4f);
         }
         else
         {
+            Debug.Log("게임오버 처리");
             if (UIhealth != null && UIhealth[0] != null)
                 UIhealth[0].color = new Color(1, 0, 0, 0.4f);
 
@@ -139,12 +142,11 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public Vector3 spawnPoint = new Vector3(1, 3, -1);
+
     public void PlayerReporsition()
     {
-        // 씬에 SpawnPoint 태그 오브젝트가 있으면 그 위치 사용, 없으면 기본값
-        GameObject spawnPoint = GameObject.FindWithTag("SpawnPoint");
-        Vector3 pos = spawnPoint != null ? spawnPoint.transform.position : new Vector3(1, 3, -1);
-        player.transform.position = pos;
+        player.transform.position = spawnPoint;
         player.VelocityZero();
     }
 
