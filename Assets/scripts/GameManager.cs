@@ -1,71 +1,124 @@
 using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
+
 public class GameManager : MonoBehaviour
 {
+    public static GameManager instance;
+
     public int totalPoint = 0;
     public int stagePoint;
     public int stageIndex;
     public int health;
-    public PlayerMove player;
-    public GameObject[] stages;
 
-    public Image[] UIhealth;
-    public TextMeshProUGUI UI_point;
-    public TextMeshProUGUI UI_stage;
-    public GameObject RestartBtn;
+    // 씬 로드 후 동적으로 찾아서 연결됨
+    [HideInInspector] public PlayerMove player;
+    [HideInInspector] public Image[] UIhealth;
+    [HideInInspector] public TextMeshProUGUI UI_point;
+    [HideInInspector] public TextMeshProUGUI UI_stage;
+    [HideInInspector] public GameObject RestartBtn;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    static readonly string[] stageScenes = { "Stage1", "Stage2", "Stage3", "ClearStage" };
+
+    int maxHealth;
+
+    void Awake()
+    {
+        if (instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        instance = this;
+        DontDestroyOnLoad(gameObject);
+        maxHealth = health;
+
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    // 비활성 오브젝트 포함해서 이름으로 찾기
+    static GameObject FindByName(string name)
+    {
+        foreach (var t in FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            if (t.name == name) return t.gameObject;
+        return null;
+    }
+
+    // 씬이 로드될 때마다 UI와 플레이어를 새로 찾아서 연결
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == "StartScene") return;
+
+        player = FindFirstObjectByType<PlayerMove>(FindObjectsInactive.Include);
+
+        GameObject life1 = FindByName("Life1");
+        GameObject life2 = FindByName("Life2");
+        GameObject life3 = FindByName("Life3");
+        GameObject point = FindByName("Point");
+        GameObject stage = FindByName("Stage");
+
+        UIhealth = new Image[3];
+        UIhealth[0] = life1 != null ? life1.GetComponent<Image>() : null;
+        UIhealth[1] = life2 != null ? life2.GetComponent<Image>() : null;
+        UIhealth[2] = life3 != null ? life3.GetComponent<Image>() : null;
+        UI_point = point != null ? point.GetComponent<TextMeshProUGUI>() : null;
+        UI_stage = stage != null ? stage.GetComponent<TextMeshProUGUI>() : null;
+        RestartBtn = FindByName("재시작");
+
+        if (RestartBtn != null)
+        {
+            Button btn = RestartBtn.GetComponent<Button>();
+            if (btn != null)
+            {
+                btn.onClick.RemoveAllListeners();
+                btn.onClick.AddListener(Restart);
+            }
+            RestartBtn.SetActive(false);
+        }
+
+        // 체력 UI 상태 복원
+        for (int i = 0; i < UIhealth.Length; i++)
+        {
+            if (UIhealth[i] == null) continue;
+            UIhealth[i].color = i < health ? Color.white : new Color(1, 0, 0, 0.4f);
+        }
+
+        if (UI_stage != null)
+            UI_stage.text = scene.name == "ClearStage" ? "CLEAR!" : "STAGE " + (stageIndex + 1);
+    }
 
     void Update()
     {
-        UI_point.text = (totalPoint + stagePoint).ToString();
+        if (UI_point != null)
+            UI_point.text = (totalPoint + stagePoint).ToString();
     }
+
     public void NextStage()
     {
-        //스테이지 변경
-        if (stageIndex < stages.Length - 1)
-        {
-            stages[stageIndex].SetActive(false);
-            stageIndex++;
-            stages[stageIndex].SetActive(true);
-
-            // 마지막 스테이지(축하 맵)에 도달했는지 확인
-            if (stageIndex == stages.Length - 1)
-            {
-                UI_stage.text = "CLEAR!";
-                Debug.Log("게임 클리어!");
-
-                // [개선 포인트 3] 게임 인터페이스를 TMPro로 통일하셨기 때문에, 버튼 안의 글씨도 Text 대신 
-                // TextMeshProUGUI를 찾아와야 에러(NullReferenceException) 없이 텍스트를 바꿀 수 있습니다!
-                RestartBtn.SetActive(true);
-                TextMeshProUGUI btnText = RestartBtn.GetComponentInChildren<TextMeshProUGUI>();
-                if (btnText != null)
-                {
-                    btnText.text = "GAME CLEAR";
-                }
-            }
-            else
-            {
-                UI_stage.text = "STAGE" + (stageIndex + 1);
-            }
-        }
-
-        else
-        {   //게임 클리어!
-            Debug.Log("게임 클리어!");
-            RestartBtn.SetActive(true);
-        }
-
-        //플레이어 위치 초기화
-        PlayerReporsition();
-
-        //점수 환산
         totalPoint += stagePoint;
         stagePoint = 0;
+        stageIndex++;
+
+        if (stageIndex < stageScenes.Length)
+        {
+            SceneManager.LoadScene(stageScenes[stageIndex]);
+        }
+        else
+        {
+            // ClearStage에서 피니시 → 게임 완전 클리어
+            if (RestartBtn != null)
+            {
+                RestartBtn.SetActive(true);
+                TextMeshProUGUI btnText = RestartBtn.GetComponentInChildren<TextMeshProUGUI>();
+                if (btnText != null) btnText.text = "GAME CLEAR";
+            }
+        }
     }
 
     public void HealthDown()
@@ -73,56 +126,36 @@ public class GameManager : MonoBehaviour
         if (health > 1)
         {
             health--;
-            UIhealth[health].color = new Color(1, 0, 0, 0.4f);
+            if (UIhealth != null && UIhealth[health] != null)
+                UIhealth[health].color = new Color(1, 0, 0, 0.4f);
         }
-
         else
         {
-            // [주의] 이미 사망했는데 바닥으로 다시 떨어져 OnTriggerEnter2D가 또 불리면, 
-            // OnDie가 반복 호출되어 위로 계속 튕겨오르는 버그가 발생할 수 있습니다. 
-            // bool isDead 같은 변수를 두고 이미 죽었으면 예외처리하는 것이 안전합습니다.
+            if (UIhealth != null && UIhealth[0] != null)
+                UIhealth[0].color = new Color(1, 0, 0, 0.4f);
 
-            UIhealth[0].color = new Color(1, 0, 0, 0.4f);
-
-            //플레이어 사망 이펙트    
             player.OnDie();
-
-            //결과 화면
-            Debug.Log("Game Over");
-            RestartBtn.SetActive(true);
-
-
+            if (RestartBtn != null) RestartBtn.SetActive(true);
         }
     }
 
-    // Update is called once per frame
-    void OnTriggerEnter2D(Collider2D collision)
+    public void PlayerReporsition()
     {
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            //플레이어 사망시 트리거 발동 방지
-            if (health > 1)
-            {
-                PlayerReporsition();
-            }
-
-            //낙하시 피 감소
-            HealthDown();
-        }
-    }
-
-    void PlayerReporsition()
-    {
-        //낙하시 또는 다음 스테이지로 넘어갈 때 원상복귀될 위치 좌표
-        player.transform.position = new Vector3(1, 3, -1);
+        // 씬에 SpawnPoint 태그 오브젝트가 있으면 그 위치 사용, 없으면 기본값
+        GameObject spawnPoint = GameObject.FindWithTag("SpawnPoint");
+        Vector3 pos = spawnPoint != null ? spawnPoint.transform.position : new Vector3(1, 3, -1);
+        player.transform.position = pos;
         player.VelocityZero();
-
     }
 
-    // 재시작 버튼에서 호출할 함수
     public void Restart()
     {
+        totalPoint = 0;
+        stagePoint = 0;
+        stageIndex = 0;
+        health = maxHealth;
+
         Time.timeScale = 1;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        SceneManager.LoadScene("Stage1");
     }
 }

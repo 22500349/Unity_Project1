@@ -12,7 +12,7 @@ using System;
 
 public class PlayerMove : MonoBehaviour
 {
-    public GameManager gameManager;
+    GameManager gameManager => GameManager.instance;
 
     //오디오
     public AudioClip audioJump;
@@ -154,6 +154,14 @@ public class PlayerMove : MonoBehaviour
                 OnDamaged(contactPoint);
                 PlaySound("Damage");
             }
+        }
+
+        // 스파이크는 항상 데미지만 줌 (점수 없음)
+        if (collision.gameObject.CompareTag("Spike"))
+        {
+            Vector2 contactPoint = collision.contacts[0].point;
+            OnDamaged(contactPoint);
+            PlaySound("Damage");
         }
 
         if (isKnockback && collision.gameObject.layer == LayerMask.NameToLayer("Platform"))
