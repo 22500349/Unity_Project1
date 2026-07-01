@@ -34,6 +34,7 @@ public class PlayerMove : MonoBehaviour
     AudioSource audioSource;
 
     bool isKnockback = false;
+    bool isDamaged = false;
 
     void Awake()
     {
@@ -138,7 +139,7 @@ public class PlayerMove : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Enemy"))
+        if (!isDamaged && collision.gameObject.CompareTag("Enemy"))
         {
             //공격
             if (rigid.linearVelocity.y < 0 && transform.position.y > collision.transform.position.y)
@@ -157,7 +158,7 @@ public class PlayerMove : MonoBehaviour
         }
 
         // 스파이크는 항상 데미지만 줌 (점수 없음)
-        if (collision.gameObject.CompareTag("Spike"))
+        if (!isDamaged && collision.gameObject.CompareTag("Spike"))
         {
             Vector2 contactPoint = collision.contacts[0].point;
             OnDamaged(contactPoint);
@@ -173,8 +174,8 @@ public class PlayerMove : MonoBehaviour
             // 1. 땅에 닿았으니 넉백 상태를 풀어서 조작이 가능하게 만듦
             Invoke("OffKnockback", 0.3f);
 
-            // 2. 땅에 닿은 지금 이 순간부터 2초 뒤에 무적이 풀리도록 타이머 시작!
-            Invoke("OffDamaged", 2);
+            // 2. 땅에 닿은 지금 이 순간부터 1초 뒤에 무적이 풀리도록 타이머 시작!
+            Invoke("OffDamaged", 1);
         }
     }
 
@@ -201,13 +202,32 @@ public class PlayerMove : MonoBehaviour
 
         else if (collision.gameObject.CompareTag("Finish"))
         {
-            // [버그 방지] 콜라이더나 여러 요인으로 한 번에 여러 번 닿아 
+            // [버그 방지] 콜라이더나 여러 요인으로 한 번에 여러 번 닿아
             // 스테이지가 순식간에 넘어가 클리어되는 것을 방지하기 위해 비활성화합니다.
             collision.enabled = false;
 
             //다음 스테이지
             gameManager.NextStage();
             PlaySound("Finish");
+        }
+
+        // 스파이크가 isTrigger = true 인 경우 데미지 처리
+        else if (!isDamaged && collision.gameObject.CompareTag("Spike"))
+        {
+            Vector2 contactPoint = collision.bounds.center;
+            OnDamaged(contactPoint);
+            PlaySound("Damage");
+        }
+    }
+
+    void OnTriggerStay2D(Collider2D collision)
+    {
+        // 날아오는 스파이크가 플레이어 위치로 이동할 때 감지
+        if (!isDamaged && collision.gameObject.CompareTag("Spike"))
+        {
+            Vector2 contactPoint = collision.bounds.center;
+            OnDamaged(contactPoint);
+            PlaySound("Damage");
         }
     }
     void OnAttack(Transform enemy)
@@ -234,7 +254,7 @@ public class PlayerMove : MonoBehaviour
     {
         gameManager.HealthDown();                                   // 피 감소
 
-        gameObject.layer = 11;                                      //피격시 레이어 변경
+        isDamaged = true;
         spriteRenderer.color = new Color(1, 1, 1, 0.4f);            //피격 반응
 
         int dirc = transform.position.x - targetPos.x > 0 ? 1 : -1; //피격시 어느쪽으로 밀려날지
@@ -248,7 +268,7 @@ public class PlayerMove : MonoBehaviour
 
     void OffDamaged()
     {
-        gameObject.layer = 10;
+        isDamaged = false;
         spriteRenderer.color = new Color(1, 1, 1, 1);
     }
 

@@ -3978,8 +3978,8 @@ Transform:
   m_GameObject: {fileID: 1196891524}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 4.0433, y: -8.69618, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 7.5, y: -8.5, z: 0}
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 957936202}
@@ -3996,9 +3996,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa6cfd7288010483b886b7cdecfbb7b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MapTrigger
-  target: {fileID: 939313971}
+  targets:
+  - {fileID: 939313971}
   moveOffset: {x: 0, y: 0}
-  speed: 4
+  speed: 10
   delay: 0
   oneShot: 1
   returnOnExit: 0
@@ -5646,9 +5647,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa6cfd7288010483b886b7cdecfbb7b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MapTrigger
-  target: {fileID: 1920371064}
+  targets:
+  - {fileID: 1920371064}
   moveOffset: {x: 0, y: 5.5}
-  speed: 15
+  speed: 20
   delay: 0
   oneShot: 1
   returnOnExit: 0

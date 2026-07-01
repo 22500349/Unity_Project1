@@ -22,6 +22,7 @@ public class GameManager : MonoBehaviour
     static readonly string[] stageScenes = { "Stage1", "Stage2", "Stage3", "ClearStage" };
 
     int maxHealth;
+    GameObject resetBtnCanvas;
 
     void Awake()
     {
@@ -34,7 +35,61 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
         maxHealth = health;
 
+        // 씬에서 직접 플레이할 때 stageIndex를 씬 이름으로부터 자동 설정
+        string sceneName = SceneManager.GetActiveScene().name;
+        for (int i = 0; i < stageScenes.Length; i++)
+        {
+            if (stageScenes[i] == sceneName)
+            {
+                stageIndex = i;
+                break;
+            }
+        }
+
+        CreateResetButton();
         SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void CreateResetButton()
+    {
+        resetBtnCanvas = new GameObject("ResetButtonCanvas");
+        resetBtnCanvas.transform.SetParent(transform);
+        Canvas canvas = resetBtnCanvas.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 99;
+        resetBtnCanvas.AddComponent<CanvasScaler>();
+        resetBtnCanvas.AddComponent<GraphicRaycaster>();
+
+        GameObject btnGO = new GameObject("ResetBtn");
+        btnGO.transform.SetParent(resetBtnCanvas.transform, false);
+
+        RectTransform rt = btnGO.AddComponent<RectTransform>();
+        rt.anchorMin = new Vector2(1f, 0f);
+        rt.anchorMax = new Vector2(1f, 0f);
+        rt.pivot = new Vector2(1f, 0f);
+        rt.anchoredPosition = new Vector2(-16f, 16f);
+        rt.sizeDelta = new Vector2(100f, 36f);
+
+        Image img = btnGO.AddComponent<Image>();
+        img.color = new Color(0.15f, 0.15f, 0.15f, 0.85f);
+
+        Button btn = btnGO.AddComponent<Button>();
+        btn.onClick.AddListener(Restart);
+
+        GameObject textGO = new GameObject("Label");
+        textGO.transform.SetParent(btnGO.transform, false);
+        RectTransform textRt = textGO.AddComponent<RectTransform>();
+        textRt.anchorMin = Vector2.zero;
+        textRt.anchorMax = Vector2.one;
+        textRt.offsetMin = Vector2.zero;
+        textRt.offsetMax = Vector2.zero;
+        TextMeshProUGUI label = textGO.AddComponent<TextMeshProUGUI>();
+        label.text = "초기화";
+        label.alignment = TextAlignmentOptions.Center;
+        label.fontSize = 18;
+        label.color = Color.white;
+
+        resetBtnCanvas.SetActive(false);
     }
 
     void OnDestroy()
@@ -50,9 +105,18 @@ public class GameManager : MonoBehaviour
         return null;
     }
 
+    static readonly string[] stageScenesWithReset = { "Stage1", "Stage2", "Stage3" };
+
     // 씬이 로드될 때마다 UI와 플레이어를 새로 찾아서 연결
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        // 초기화 버튼: Stage1·2·3에서만 표시
+        if (resetBtnCanvas != null)
+        {
+            bool show = System.Array.IndexOf(stageScenesWithReset, scene.name) >= 0;
+            resetBtnCanvas.SetActive(show);
+        }
+
         if (scene.name == "StartScene") return;
 
         player = FindFirstObjectByType<PlayerMove>(FindObjectsInactive.Include);
