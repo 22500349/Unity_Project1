@@ -487,7 +487,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &293769964
+--- !u!1 &232547601
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -495,38 +495,50 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 293769966}
-  - component: {fileID: 293769965}
+  - component: {fileID: 232547603}
+  - component: {fileID: 232547602}
   m_Layer: 0
-  m_Name: DeathZone
+  m_Name: Game Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &293769965
+--- !u!114 &232547602
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 293769964}
+  m_GameObject: {fileID: 232547601}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 720d1184249624b9db9ce16d69693a33, type: 3}
+  m_Script: {fileID: 11500000, guid: 096c18f48cabc4e719e248413eaa2ab4, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DeathZone
-  killY: -8
---- !u!4 &293769966
+  m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  totalPoint: 0
+  stagePoint: 0
+  stageIndex: 0
+  health: 3
+  player: {fileID: 0}
+  UIhealth:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  UI_point: {fileID: 0}
+  UI_stage: {fileID: 0}
+  RestartBtn: {fileID: 0}
+  spawnPoint: {x: 1, y: 3, z: -1}
+--- !u!4 &232547603
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 293769964}
+  m_GameObject: {fileID: 232547601}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2584,7 +2596,7 @@ GameObject:
   - component: {fileID: 1101193446}
   m_Layer: 9
   m_Name: Spike
-  m_TagString: Enemy
+  m_TagString: Spike
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3079,6 +3091,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1186881698}
   m_CullTransparentMesh: 1
+--- !u!1 &1187210162
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1187210164}
+  - component: {fileID: 1187210163}
+  m_Layer: 0
+  m_Name: DeathZone
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1187210163
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1187210162}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 720d1184249624b9db9ce16d69693a33, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeathZone
+  killY: -8
+--- !u!4 &1187210164
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1187210162}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1291428005
 GameObject:
   m_ObjectHideFlags: 0
@@ -4314,4 +4371,5 @@ SceneRoots:
   - {fileID: 1291428006}
   - {fileID: 1765918805}
   - {fileID: 211516418}
-  - {fileID: 293769966}
+  - {fileID: 1187210164}
+  - {fileID: 232547603}
