@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -111,6 +113,13 @@ public class GameManager : MonoBehaviour
     // 씬이 로드될 때마다 UI와 플레이어를 새로 찾아서 연결
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        // 씬에 EventSystem이 없으면(ClearStage 등) UI 클릭이 전혀 동작하지 않으므로 생성
+        if (EventSystem.current == null)
+        {
+            GameObject es = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
+            es.transform.SetParent(transform);
+        }
+
         // 초기화 버튼: Stage1·2·3에서만 표시
         if (resetBtnCanvas != null)
         {
@@ -139,12 +148,27 @@ public class GameManager : MonoBehaviour
         if (RestartBtn != null)
         {
             Button btn = RestartBtn.GetComponent<Button>();
-            if (btn != null)
+            if (scene.name == "ClearStage")
             {
-                btn.onClick.RemoveAllListeners();
-                btn.onClick.AddListener(Restart);
+                // 최종 클리어 화면 — 항상 표시, Stage1로 완전 초기화
+                if (btn != null)
+                {
+                    btn.onClick.RemoveAllListeners();
+                    btn.onClick.AddListener(FullClearRestart);
+                }
+                TextMeshProUGUI btnText = RestartBtn.GetComponentInChildren<TextMeshProUGUI>();
+                if (btnText != null) btnText.text = "GAME CLEAR";
+                RestartBtn.SetActive(true);
             }
-            RestartBtn.SetActive(false);
+            else
+            {
+                if (btn != null)
+                {
+                    btn.onClick.RemoveAllListeners();
+                    btn.onClick.AddListener(Restart);
+                }
+                RestartBtn.SetActive(false);
+            }
         }
 
         // 체력 UI 상태 복원
@@ -248,5 +272,19 @@ public class GameManager : MonoBehaviour
     void FullRestart()
     {
         PlayerReporsition();
+    }
+
+
+    // 최종 클리어 화면 재시작 버튼 — Stage1부터 완전 초기화
+    void FullClearRestart()
+    {
+        totalPoint = 0;
+        stagePoint = 0;
+        stageIndex = 0;
+        health = maxHealth;
+        nextLifeBonus = 1000;
+
+        Time.timeScale = 1;
+        SceneManager.LoadScene(stageScenes[0]);
     }
 }
