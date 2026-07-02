@@ -22,6 +22,7 @@ public class GameManager : MonoBehaviour
     static readonly string[] stageScenes = { "Stage1", "Stage2", "Stage3", "ClearStage" };
 
     int maxHealth;
+    int nextLifeBonus = 1000;
     GameObject resetBtnCanvas;
 
     void Awake()
@@ -159,8 +160,22 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
+        int currentPoint = totalPoint + stagePoint;
+
         if (UI_point != null)
-            UI_point.text = (totalPoint + stagePoint).ToString();
+            UI_point.text = currentPoint.ToString();
+
+        // 1000점마다 라이프 1개 회복 (최대치 초과 X)
+        if (currentPoint >= nextLifeBonus)
+        {
+            nextLifeBonus += 1000;
+            if (health < maxHealth)
+            {
+                health++;
+                if (UIhealth != null && UIhealth[health - 1] != null)
+                    UIhealth[health - 1].color = Color.white;
+            }
+        }
     }
 
     public void NextStage()
@@ -229,15 +244,9 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene(stageScenes[stageIndex]);
     }
 
-    // 오른쪽 하단 초기화 버튼 — Stage1부터 완전 초기화
+    // 오른쪽 하단 초기화 버튼 — 현재 스테이지의 스폰 지점으로 즉시 이동 (씬 리로드 없음, 목숨은 그대로 유지)
     void FullRestart()
     {
-        totalPoint = 0;
-        stagePoint = 0;
-        stageIndex = 0;
-        health = maxHealth;
-
-        Time.timeScale = 1;
-        SceneManager.LoadScene("Stage1");
+        PlayerReporsition();
     }
 }
